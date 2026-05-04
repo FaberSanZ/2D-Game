@@ -32,6 +32,8 @@ public:
             body.velocity = { 0.0f, 0.0f, 0.0f };
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
             body.linearDamping = 0.0f;
+            body.linearForce = { 0.4f, 0.0f, 0.0f };
+
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -60,7 +62,9 @@ public:
             body.invMass = 1.0f / body.mass;
             body.velocity = { 0.0f, 0.0f, 0.0f };
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
-            body.linearDamping = 5.0f;
+            body.linearDamping = 0.5f;
+            body.linearForce = { 0.4f, 0.0f, 0.0f };
+
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -152,6 +156,9 @@ public:
                 body.velocity.y += body.linearImpulse.y * body.invMass;
 
                 body.linearImpulse = { 0.0f, 0.0f, 0.0f };
+
+                body.velocity.x += body.linearForce.x * body.invMass * dt;
+                body.velocity.y += body.linearForce.y * body.invMass * dt;
 
                 body.velocity.x += body.acceleration.x * dt;
                 body.velocity.y += body.acceleration.y * dt;
