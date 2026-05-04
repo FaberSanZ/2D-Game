@@ -16,7 +16,6 @@ public:
 
     void OnInitialize(entt::registry& registry)
     {
-        const DirectX::XMFLOAT3 initialImpulse = { 0.35f, 0.0f, 0.0f };
         {
             auto entity = registry.create();
 
@@ -30,7 +29,8 @@ public:
             body.acceleration = { 0.0f, 0.0f, 0.0f };
             body.mass = 1.0f;
             body.invMass = 1.0f / body.mass;
-            body.velocity = { initialImpulse.x * body.invMass, initialImpulse.y * body.invMass, 0.0f };
+            body.velocity = { 0.0f, 0.0f, 0.0f };
+            body.linearImpulse = { 0.35f, 0.0f, 0.0f };
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -57,7 +57,8 @@ public:
             body.acceleration = { 0.0f, 0.0f, 0.0f };
             body.mass = 4.0f;
             body.invMass = 1.0f / body.mass;
-            body.velocity = { initialImpulse.x * body.invMass, initialImpulse.y * body.invMass, 0.0f };
+            body.velocity = { 0.0f, 0.0f, 0.0f };
+            body.linearImpulse = { 0.35f, 0.0f, 0.0f };
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -145,6 +146,11 @@ public:
                 if (body.invMass <= 0.0f)
                     continue;
 
+                body.velocity.x += body.linearImpulse.x * body.invMass;
+                body.velocity.y += body.linearImpulse.y * body.invMass;
+
+                body.linearImpulse = { 0.0f, 0.0f, 0.0f };
+
                 body.velocity.x += body.acceleration.x * dt;
                 body.velocity.y += body.acceleration.y * dt;
 
@@ -164,6 +170,18 @@ public:
             transform.position.x = body.position.x;
             transform.position.y = body.position.y;
         }
+    }
+
+    void ApplyLinearImpulse(RigidbodyComponent& body, const DirectX::XMFLOAT3& impulse)
+    {
+        if (body.type != PhysicsBodyType::Dynamic)
+            return;
+
+        if (body.invMass <= 0.0f)
+            return;
+
+        body.velocity.x += impulse.x * body.invMass;
+        body.velocity.y += impulse.y * body.invMass;
     }
 
 
