@@ -157,17 +157,16 @@ public:
 
                 body.linearImpulse = { 0.0f, 0.0f, 0.0f };
 
+                body.linearForce.x += gravity.x * body.mass;
+                body.linearForce.y += gravity.y * body.mass;
+
                 body.velocity.x += body.linearForce.x * body.invMass * dt;
                 body.velocity.y += body.linearForce.y * body.invMass * dt;
 
                 body.linearForce = { 0.0f, 0.0f, 0.0f };
 
-
                 body.velocity.x += body.acceleration.x * dt;
                 body.velocity.y += body.acceleration.y * dt;
-
-                body.velocity.x += gravity.x * dt;
-                body.velocity.y += gravity.y * dt;
 
                 const float dampingFactor = 1.0f / (1.0f + body.linearDamping * dt);
 
