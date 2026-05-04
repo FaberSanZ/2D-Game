@@ -47,10 +47,14 @@ struct RigidbodyComponent
     DirectX::XMFLOAT3 linearImpulse = { 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 linearForce = { 0.0f, 0.0f, 0.0f };
 
-
-
     float mass = 1.0f;
     float invMass = 1.0f;
     float linearDamping = 0.0f; // TODO:
 
+};
+
+
+struct CircleColliderComponent
+{
+    float radius = 1.0f;
 };

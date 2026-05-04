@@ -41,10 +41,15 @@ public:
             MaterialComponent material{};
             material.color = { 0.8f, 0.2f, 0.1f };
 
+            CircleColliderComponent collider{};
+            collider.radius = 1.0f;
+
+
             registry.emplace<TransformComponent>(entity, transform);
             registry.emplace<RigidbodyComponent>(entity, body);
             registry.emplace<MeshComponent>(entity, mesh);
             registry.emplace<MaterialComponent>(entity, material);
+            registry.emplace<CircleColliderComponent>(entity, collider);
         }
 
         {
@@ -71,11 +76,15 @@ public:
 
             MaterialComponent material{};
             material.color = { 0.8f, 0.8f, 0.1f };
+            CircleColliderComponent collider{};
+            collider.radius = 1.0f;
+
 
             registry.emplace<TransformComponent>(entity, transform);
             registry.emplace<RigidbodyComponent>(entity, body);
             registry.emplace<MeshComponent>(entity, mesh);
             registry.emplace<MaterialComponent>(entity, material);
+            registry.emplace<CircleColliderComponent>(entity, collider);
         }
 
 
@@ -100,10 +109,15 @@ public:
             MaterialComponent material{};
             material.color = { 0.3f, 0.8f, 0.3f };
 
+            CircleColliderComponent collider{};
+            collider.radius = 1.0f;
+
+
             registry.emplace<TransformComponent>(entity, transform);
             registry.emplace<RigidbodyComponent>(entity, body);
             registry.emplace<MeshComponent>(entity, mesh);
             registry.emplace<MaterialComponent>(entity, material);
+            registry.emplace<CircleColliderComponent>(entity, collider);
         }
 
 
@@ -128,10 +142,14 @@ public:
             MaterialComponent material{};
             material.color = { 0.3f, 0.2f, 0.8f };
 
+            CircleColliderComponent collider{};
+            collider.radius = 1.0f;
+
             registry.emplace<TransformComponent>(entity, transform);
             registry.emplace<RigidbodyComponent>(entity, body);
             registry.emplace<MeshComponent>(entity, mesh);
             registry.emplace<MaterialComponent>(entity, material);
+            registry.emplace<CircleColliderComponent>(entity, collider);
         }
 
     }
@@ -266,7 +284,6 @@ public:
             }
 
 
-			physicsSystem.OnUpdate(registry, gameTime);
             renderSystem.OnUpdate(registry, gameTime);
         }
     }
