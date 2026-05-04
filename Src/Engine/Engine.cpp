@@ -20,7 +20,7 @@ public:
             auto entity = registry.create();
 
             TransformComponent transform{};
-            transform.position = { -0.6f, 0.5f, 0.0f };
+            transform.position = { -0.7f, 0.5f, 0.0f };
             transform.scale = { 1.0f, 1.0f };
 
             RigidbodyComponent body{};
@@ -33,7 +33,7 @@ public:
             mesh.shapeType = ShapeType::Circle;
 
             MaterialComponent material{};
-            material.color = { 1.0f, 0.0f, 0.0f };
+            material.color = { 0.8f, 0.2f, 0.1f };
 
             registry.emplace<TransformComponent>(entity, transform);
             registry.emplace<RigidbodyComponent>(entity, body);
@@ -45,7 +45,7 @@ public:
             auto entity = registry.create();
 
             TransformComponent transform{};
-            transform.position = { 0.6f, 0.0f, 0.0f };
+            transform.position = { 0.0f, 0.0f, 0.0f };
             transform.scale = { 1.0f, 1.0f };
 
             RigidbodyComponent body{};
@@ -58,13 +58,40 @@ public:
             mesh.shapeType = ShapeType::Circle;
 
             MaterialComponent material{};
-            material.color = { 0.0f, 1.0f, 0.0f };
+            material.color = { 0.3f, 0.8f, 0.3f };
 
             registry.emplace<TransformComponent>(entity, transform);
             registry.emplace<RigidbodyComponent>(entity, body);
             registry.emplace<MeshComponent>(entity, mesh);
             registry.emplace<MaterialComponent>(entity, material);
         }
+
+
+        {
+            auto entity = registry.create();
+
+            TransformComponent transform{};
+            transform.position = { -0.7f, -0.6f, 0.0f };
+            transform.scale = { 1.0f, 1.0f };
+
+            RigidbodyComponent body{};
+            body.type = PhysicsBodyType::Kinematic;
+            body.position = transform.position;
+            body.velocity = { 0.35f, 0.0f, 0.0f };
+            body.acceleration = { 0.0f, 0.0f, 0.0f };
+
+            MeshComponent mesh{};
+            mesh.shapeType = ShapeType::Circle;
+
+            MaterialComponent material{};
+            material.color = { 0.3f, 0.2f, 0.8f };
+
+            registry.emplace<TransformComponent>(entity, transform);
+            registry.emplace<RigidbodyComponent>(entity, body);
+            registry.emplace<MeshComponent>(entity, mesh);
+            registry.emplace<MaterialComponent>(entity, material);
+        }
+
     }
 
     void OnUpdate(entt::registry& registry, GameTime time)
@@ -75,14 +102,23 @@ public:
 
         for (auto [entity, transform, body] : view.each())
         {
-            if (body.type != PhysicsBodyType::Dynamic)
+            if (body.type == PhysicsBodyType::Static)
                 continue;
 
-            body.velocity.x += body.acceleration.x * dt;
-            body.velocity.y += body.acceleration.y * dt;
+            if (body.type == PhysicsBodyType::Dynamic)
+            {
+                body.velocity.x += body.acceleration.x * dt;
+                body.velocity.y += body.acceleration.y * dt;
 
-            body.velocity.x += gravity.x * dt;
-            body.velocity.y += gravity.y * dt;
+                body.velocity.x += gravity.x * dt;
+                body.velocity.y += gravity.y * dt;
+            }
+
+            if (body.type == PhysicsBodyType::Kinematic)
+            {
+                body.velocity.x += body.acceleration.x * dt;
+                body.velocity.y += body.acceleration.y * dt;
+            }
 
             body.position.x += body.velocity.x * dt;
             body.position.y += body.velocity.y * dt;
