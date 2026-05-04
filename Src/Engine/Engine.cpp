@@ -138,7 +138,7 @@ public:
 
     void OnUpdate(entt::registry& registry, GameTime time)
     {
-        const float dt = static_cast<float>(time.GetDeltaTime());
+        const float dt = static_cast<float>(time.FixedDeltaTime());
 
         auto view = registry.view<TransformComponent, RigidbodyComponent>();
 
@@ -217,7 +217,16 @@ public:
     {
         // Initialize games
         gameTime = {};
-        gameTime.OnInitialize();
+
+        GameTime::Config config{};
+        config.fixedDeltaTime = 1.0 / 60.0;
+        config.maxDeltaTime = 0.25;
+        config.maxPhysicsStepsPerFrame = 8;
+        config.timeScale = 1.0;
+        config.clearPhysicsAccumulatorOnReset = true;
+
+        gameTime.SetConfig(config);
+        gameTime.Reset();
 
         gameWindow = {};
         gameWindow.OnInitialize();
@@ -250,6 +259,12 @@ public:
         {
             gameWindow.PumpMessages();
             gameTime.OnUpdate();
+
+            while (gameTime.UpdatePhysics())
+            {
+                physicsSystem.OnUpdate(registry, gameTime);
+            }
+
 
 			physicsSystem.OnUpdate(registry, gameTime);
             renderSystem.OnUpdate(registry, gameTime);
