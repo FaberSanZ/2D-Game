@@ -16,18 +16,21 @@ public:
 
     void OnInitialize(entt::registry& registry)
     {
+        const DirectX::XMFLOAT3 initialImpulse = { 0.35f, 0.0f, 0.0f };
         {
             auto entity = registry.create();
 
             TransformComponent transform{};
-            transform.position = { -0.7f, 0.5f, 0.0f };
+            transform.position = { -0.8f, 0.6f, 0.0f };
             transform.scale = { 1.0f, 1.0f };
 
             RigidbodyComponent body{};
             body.type = PhysicsBodyType::Dynamic;
             body.position = transform.position;
-            body.velocity = { 0.4f, 0.0f, 0.0f };
             body.acceleration = { 0.0f, 0.0f, 0.0f };
+            body.mass = 1.0f;
+            body.invMass = 1.0f / body.mass;
+            body.velocity = { initialImpulse.x * body.invMass, initialImpulse.y * body.invMass, 0.0f };
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -45,14 +48,44 @@ public:
             auto entity = registry.create();
 
             TransformComponent transform{};
-            transform.position = { 0.0f, 0.0f, 0.0f };
+            transform.position = { -0.8f, 0.2f, 0.0f };
+            transform.scale = { 1.0f, 1.0f };
+
+            RigidbodyComponent body{};
+            body.type = PhysicsBodyType::Dynamic;
+            body.position = transform.position;
+            body.acceleration = { 0.0f, 0.0f, 0.0f };
+            body.mass = 4.0f;
+            body.invMass = 1.0f / body.mass;
+            body.velocity = { initialImpulse.x * body.invMass, initialImpulse.y * body.invMass, 0.0f };
+
+            MeshComponent mesh{};
+            mesh.shapeType = ShapeType::Circle;
+
+            MaterialComponent material{};
+            material.color = { 0.8f, 0.8f, 0.1f };
+
+            registry.emplace<TransformComponent>(entity, transform);
+            registry.emplace<RigidbodyComponent>(entity, body);
+            registry.emplace<MeshComponent>(entity, mesh);
+            registry.emplace<MaterialComponent>(entity, material);
+        }
+
+
+        {
+            auto entity = registry.create();
+
+            TransformComponent transform{};
+            transform.position = { 0.0f, -0.2f, 0.0f };
             transform.scale = { 1.0f, 1.0f };
 
             RigidbodyComponent body{};
             body.type = PhysicsBodyType::Static;
             body.position = transform.position;
-            body.velocity = { 0.0f, 0.0f, 0.0f };
-            body.acceleration = { 0.0f, 0.0f, 0.0f };
+            //body.velocity = { 0.0f, 0.0f, 0.0f };
+            //body.acceleration = { 0.0f, 0.0f, 0.0f };
+            body.mass = 0.0f;
+            body.invMass = 0.0f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -71,14 +104,16 @@ public:
             auto entity = registry.create();
 
             TransformComponent transform{};
-            transform.position = { -0.7f, -0.6f, 0.0f };
+            transform.position = { -0.8f, -0.6f, 0.0f };
             transform.scale = { 1.0f, 1.0f };
 
             RigidbodyComponent body{};
             body.type = PhysicsBodyType::Kinematic;
             body.position = transform.position;
-            body.velocity = { 0.35f, 0.0f, 0.0f };
+            body.velocity = { 0.25f, 0.0f, 0.0f };
             body.acceleration = { 0.0f, 0.0f, 0.0f };
+            body.mass = 0.0f;
+            body.invMass = 0.0f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -107,6 +142,9 @@ public:
 
             if (body.type == PhysicsBodyType::Dynamic)
             {
+                if (body.invMass <= 0.0f)
+                    continue;
+
                 body.velocity.x += body.acceleration.x * dt;
                 body.velocity.y += body.acceleration.y * dt;
 
@@ -127,6 +165,7 @@ public:
             transform.position.y = body.position.y;
         }
     }
+
 
 private:
     DirectX::XMFLOAT3 gravity = { 0.0f, -0.5f, 0.0f };

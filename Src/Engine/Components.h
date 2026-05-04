@@ -45,4 +45,7 @@ struct RigidbodyComponent
     DirectX::XMFLOAT3 velocity = { 0.0f, 0.0f, 0.0f };
     DirectX::XMFLOAT3 acceleration = { 0.0f, 0.0f, 0.0f };
 
+
+    float mass = 1.0f;
+    float invMass = 1.0f;
 };
