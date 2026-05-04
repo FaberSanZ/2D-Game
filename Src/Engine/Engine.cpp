@@ -31,6 +31,7 @@ public:
             body.invMass = 1.0f / body.mass;
             body.velocity = { 0.0f, 0.0f, 0.0f };
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
+            body.linearDamping = 0.0f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -59,6 +60,7 @@ public:
             body.invMass = 1.0f / body.mass;
             body.velocity = { 0.0f, 0.0f, 0.0f };
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
+            body.linearDamping = 5.0f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -156,6 +158,11 @@ public:
 
                 body.velocity.x += gravity.x * dt;
                 body.velocity.y += gravity.y * dt;
+
+                const float dampingFactor = 1.0f / (1.0f + body.linearDamping * dt);
+
+                body.velocity.x *= dampingFactor;
+                body.velocity.y *= dampingFactor;
             }
 
             if (body.type == PhysicsBodyType::Kinematic)
