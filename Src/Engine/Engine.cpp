@@ -26,7 +26,7 @@ public:
         body.type = PhysicsBodyType::Dynamic;
         body.position = transform.position;
         body.velocity = { 0.6f, 0.0f, 0.0f };
-        body.acceleration = { 0.0f, -0.25f, 0.0f };
+        body.acceleration = { 0.0f, 0.0f, 0.0f };
 
         MeshComponent mesh{};
         mesh.shapeType = ShapeType::Circle;
@@ -55,6 +55,9 @@ public:
             body.velocity.x += body.acceleration.x * dt;
             body.velocity.y += body.acceleration.y * dt;
 
+            body.velocity.x += gravity.x * dt;
+            body.velocity.y += gravity.y * dt;
+
             body.position.x += body.velocity.x * dt;
             body.position.y += body.velocity.y * dt;
 
@@ -64,6 +67,7 @@ public:
     }
 
 private:
+    DirectX::XMFLOAT3 gravity = { 0.0f, -0.5f, 0.0f };
 
 };
 
