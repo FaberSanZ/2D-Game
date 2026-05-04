@@ -394,25 +394,13 @@ public:
 
     void SetOrthographicMatrix(float width, float height)
     {
+        const float halfVisibleHeight = 5.0f;
+        const float aspect = width / height;
+        const float halfVisibleWidth = halfVisibleHeight * aspect;
 
-        float orthoWidth = 2.0f;   
-        float orthoHeight = 2.0f;
-
-        float aspect = width / height;
-
-        DirectX::XMMATRIX orthoMatrix = DirectX::XMMatrixOrthographicOffCenterLH(
-            -orthoWidth * aspect,   // left
-            orthoWidth * aspect,    // right
-            -orthoHeight,           // bottom
-            orthoHeight,            // top
-            0.1f,                   // near plane
-            100.0f                  // far plane
-        );
+        DirectX::XMMATRIX orthoMatrix = DirectX::XMMatrixOrthographicOffCenterLH(-halfVisibleWidth, halfVisibleWidth, -halfVisibleHeight, halfVisibleHeight, 0.1f, 100.0f);
 
         m_projectionMatrix = orthoMatrix;
-
-
-
     }
 
     DirectX::XMMATRIX m_projectionMatrix;

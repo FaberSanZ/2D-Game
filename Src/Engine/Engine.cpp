@@ -202,7 +202,7 @@ public:
 
 
 private:
-    DirectX::XMFLOAT3 gravity = { 0.0f, -0.5f, 0.0f };
+    DirectX::XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f };
 
 };
 

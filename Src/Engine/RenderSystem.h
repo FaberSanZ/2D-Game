@@ -33,7 +33,7 @@ public:
         render.Initialize(hwnd, m_Width, m_Height);
 
 
-		circle = GenerateCirclenMesh(0.2f, 26);
+		circle = GenerateCirclenMesh(1.0f, 26);
     }
 
     Mesh GenerateCirclenMesh(float radius, uint32_t segmentCount)
