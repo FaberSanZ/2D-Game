@@ -1,0 +1,39 @@
+#pragma once
+#include <cmath>
+#include <DirectXMath.h>
+
+
+struct Float2
+{
+	float x;
+	float y;
+	constexpr Float2(float x, float y) noexcept : x(x), y(y) {}
+	Float2() : x(0.0f), y(0.0f) {}
+};
+
+
+struct Float3
+{
+	float x;
+	float y;
+	float z;
+	constexpr Float3(float x, float y, float z) noexcept : x(x), y(y), z(z) {}
+	Float3() : x(0.0f), y(0.0f), z(0.0f) {}
+};
+
+class GameMath
+{
+public:
+	static inline float DegreesToRadians(float degrees)
+	{
+		return degrees * (PI / 180.0f);
+	}
+
+	static constexpr float PI = 3.141592654f;
+	static constexpr float PI2 = 6.283185307f;
+	static constexpr float PIDIV2 = 1.570796327f;
+	static constexpr float PIDIV4 = 0.785398163f;
+};
+
+
+
