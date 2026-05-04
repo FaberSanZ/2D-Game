@@ -32,7 +32,7 @@ public:
             body.velocity = { 0.0f, 0.0f, 0.0f };
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
             body.linearDamping = 0.0f;
-            body.linearForce = { 30.0f, 0.0f, 0.0f };
+            body.linearForce = { 10.0f, 0.0f, 0.0f };
 
 
             MeshComponent mesh{};
@@ -68,7 +68,7 @@ public:
             body.velocity = { 0.0f, 0.0f, 0.0f };
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
             body.linearDamping = 0.5f;
-            body.linearForce = { 30.0f, 0.0f, 0.0f };
+            body.linearForce = { 20.0f, 0.0f, 0.0f };
 
 
             MeshComponent mesh{};
@@ -158,9 +158,9 @@ public:
     {
         const float dt = static_cast<float>(time.FixedDeltaTime());
 
-        auto view = registry.view<TransformComponent, RigidbodyComponent>();
+        auto view = registry.view<TransformComponent, RigidbodyComponent, CircleColliderComponent>();
 
-        for (auto [entity, transform, body] : view.each())
+        for (auto [entity, transform, body, collider] : view.each())
         {
             if (body.type == PhysicsBodyType::Static)
                 continue;
@@ -201,27 +201,27 @@ public:
             body.position.x += body.velocity.x * dt;
             body.position.y += body.velocity.y * dt;
 
+            const float bottom = body.position.y - collider.radius;
+
+            if (bottom < floorY)
+            {
+                body.position.y = floorY + collider.radius;
+
+                if (body.velocity.y < 0.0f)
+                    body.velocity.y = 0.0f;
+            }
+
             transform.position.x = body.position.x;
             transform.position.y = body.position.y;
         }
     }
 
-    void ApplyLinearImpulse(RigidbodyComponent& body, const DirectX::XMFLOAT3& impulse)
-    {
-        if (body.type != PhysicsBodyType::Dynamic)
-            return;
 
-        if (body.invMass <= 0.0f)
-            return;
-
-        body.velocity.x += impulse.x * body.invMass;
-        body.velocity.y += impulse.y * body.invMass;
-    }
 
 
 private:
     DirectX::XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f };
-
+    float floorY = -5.0f;
 };
 
 
