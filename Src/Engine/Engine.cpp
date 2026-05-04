@@ -16,29 +16,55 @@ public:
 
     void OnInitialize(entt::registry& registry)
     {
-        auto entity = registry.create();
+        {
+            auto entity = registry.create();
 
-        TransformComponent transform{};
-        transform.position = { -1.5f, 0.0f, 0.0f };
-        transform.scale = { 1.0f, 1.0f };
+            TransformComponent transform{};
+            transform.position = { -0.6f, 0.5f, 0.0f };
+            transform.scale = { 1.0f, 1.0f };
 
-        RigidbodyComponent body{};
-        body.type = PhysicsBodyType::Dynamic;
-        body.position = transform.position;
-        body.velocity = { 0.6f, 0.0f, 0.0f };
-        body.acceleration = { 0.0f, 0.0f, 0.0f };
+            RigidbodyComponent body{};
+            body.type = PhysicsBodyType::Dynamic;
+            body.position = transform.position;
+            body.velocity = { 0.4f, 0.0f, 0.0f };
+            body.acceleration = { 0.0f, 0.0f, 0.0f };
 
-        MeshComponent mesh{};
-        mesh.shapeType = ShapeType::Circle;
+            MeshComponent mesh{};
+            mesh.shapeType = ShapeType::Circle;
 
-        MaterialComponent material{};
-        material.color = { 0.8f, 0.2f, 0.2f };
+            MaterialComponent material{};
+            material.color = { 1.0f, 0.0f, 0.0f };
 
-        registry.emplace<TransformComponent>(entity, transform);
-        registry.emplace<RigidbodyComponent>(entity, body);
-        registry.emplace<MeshComponent>(entity, mesh);
-        registry.emplace<MaterialComponent>(entity, material);
+            registry.emplace<TransformComponent>(entity, transform);
+            registry.emplace<RigidbodyComponent>(entity, body);
+            registry.emplace<MeshComponent>(entity, mesh);
+            registry.emplace<MaterialComponent>(entity, material);
+        }
 
+        {
+            auto entity = registry.create();
+
+            TransformComponent transform{};
+            transform.position = { 0.6f, 0.0f, 0.0f };
+            transform.scale = { 1.0f, 1.0f };
+
+            RigidbodyComponent body{};
+            body.type = PhysicsBodyType::Static;
+            body.position = transform.position;
+            body.velocity = { 0.0f, 0.0f, 0.0f };
+            body.acceleration = { 0.0f, 0.0f, 0.0f };
+
+            MeshComponent mesh{};
+            mesh.shapeType = ShapeType::Circle;
+
+            MaterialComponent material{};
+            material.color = { 0.0f, 1.0f, 0.0f };
+
+            registry.emplace<TransformComponent>(entity, transform);
+            registry.emplace<RigidbodyComponent>(entity, body);
+            registry.emplace<MeshComponent>(entity, mesh);
+            registry.emplace<MaterialComponent>(entity, material);
+        }
     }
 
     void OnUpdate(entt::registry& registry, GameTime time)
