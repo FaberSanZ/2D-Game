@@ -51,6 +51,7 @@ struct RigidbodyComponent
     float invMass = 1.0f;
     float linearDamping = 0.0f; // TODO:
     float restitution = 0.0f;
+    float friction = 0.0f;
 
 };
 

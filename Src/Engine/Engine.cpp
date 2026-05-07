@@ -34,6 +34,7 @@ public:
             body.linearDamping = 0.0f;
             body.linearForce = { 10.0f, 0.0f, 0.0f };
             body.restitution = 0.75f;
+            body.friction = 0.5f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -70,6 +71,7 @@ public:
             body.linearDamping = 0.5f;
             body.linearForce = { 20.0f, 0.0f, 0.0f };
             body.restitution = 0.35f;
+            body.friction = 2.5f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -179,7 +181,7 @@ public:
             }
 
 			IntegratePosition(body, dt);
-			SolveCircleFloorCollision(body, collider);
+			SolveCircleFloorCollision(body, collider, dt);
 			SyncTransform(transform, body);
         }
     }
@@ -221,7 +223,7 @@ public:
         body.position.y += body.velocity.y * dt;
     }
 
-    void SolveCircleFloorCollision(RigidbodyComponent& body, const CircleColliderComponent& collider)
+    void SolveCircleFloorCollision(RigidbodyComponent& body, const CircleColliderComponent& collider, float dt)
     {
         const float bottom = body.position.y - collider.radius;
 
@@ -241,6 +243,12 @@ public:
                 {
                     body.velocity.y = incomingVelocity * body.restitution;
                 }
+
+                if(body.type == PhysicsBodyType::Dynamic)
+                {
+					const float frictionFactor = 1.0f / (1.0f + body.friction * dt);
+					body.velocity.x *= frictionFactor;
+				}
             }
         }
     }
