@@ -169,11 +169,11 @@ public:
     {
         const float dt = static_cast<float>(time.FixedDeltaTime());
 
-		contacts.clear();
+        contacts.clear();
 
-        auto view = registry.view<TransformComponent, RigidbodyComponent, CircleColliderComponent>();
+        auto view = registry.view<RigidbodyComponent, CircleColliderComponent>();
 
-        for (auto [entity, transform, body, collider] : view.each())
+        for (auto [entity, body, collider] : view.each())
         {
             if (body.type == PhysicsBodyType::Static)
                 continue;
@@ -185,16 +185,17 @@ public:
 
                 UpdateDynamicBody(body, dt);
             }
-
-            if (body.type == PhysicsBodyType::Kinematic)
+            else if (body.type == PhysicsBodyType::Kinematic)
             {
-				UpdateKinematicBody(body, dt);
+                UpdateKinematicBody(body, dt);
             }
 
-			IntegratePosition(body, dt);
-            SolveCircleFloorCollision(entity, body, collider, dt);
-			SyncTransform(transform, body);
+            IntegratePosition(body, dt);
         }
+
+        BuildCircleFloorContacts(registry);
+        ResolveContacts(registry, dt);
+        SyncTransforms(registry);
     }
 
 
@@ -234,51 +235,118 @@ public:
         body.position.y += body.velocity.y * dt;
     }
 
-    void SolveCircleFloorCollision(entt::entity entity, RigidbodyComponent& body, const CircleColliderComponent& collider, float dt)
-    {
-        const float bottom = body.position.y - collider.radius;
 
-        if (bottom < floorY)
+    void BuildCircleFloorContacts(entt::registry& registry)
+    {
+        auto view = registry.view<RigidbodyComponent, CircleColliderComponent>();
+
+        for (auto [entity, body, collider] : view.each())
         {
-            const float penetration = floorY - bottom;
+            if (body.type == PhysicsBodyType::Static)
+                continue;
 
             Contact contact{};
-            contact.entity = entity;
-            contact.point = { body.position.x, floorY, 0.0f };
-            contact.normal = { 0.0f, 1.0f, 0.0f };
-            contact.penetration = penetration;
 
-            contacts.push_back(contact);
-
-            body.position.y = floorY + collider.radius;
-
-            if (body.velocity.y < 0.0f)
-            {
-                const float incomingVelocity = -body.velocity.y;
-
-                if (incomingVelocity < minBounceVelocity)
-                {
-                    body.velocity.y = 0.0f;
-                }
-                else
-                {
-                    body.velocity.y = incomingVelocity * body.restitution;
-                }
-            }
-
-            if (body.type == PhysicsBodyType::Dynamic)
-            {
-                const float frictionFactor = 1.0f / (1.0f + body.friction * dt);
-                body.velocity.x *= frictionFactor;
-            }
+            if (GenerateCircleFloorContact(entity, body, collider, contact))
+                contacts.push_back(contact);
         }
     }
 
-    void SyncTransform(TransformComponent& transform, const RigidbodyComponent& body)
+    bool GenerateCircleFloorContact(entt::entity entity, const RigidbodyComponent& body, const CircleColliderComponent& collider, Contact& contact)
     {
-        transform.position.x = body.position.x;
-        transform.position.y = body.position.y;
+        const float bottom = body.position.y - collider.radius;
+
+        if (bottom >= floorY)
+            return false;
+
+        contact.entity = entity;
+        contact.point = { body.position.x, floorY, body.position.z };
+        contact.normal = { 0.0f, 1.0f, 0.0f };
+        contact.penetration = floorY - bottom;
+
+        return true;
     }
+
+    void ResolveContacts(entt::registry& registry, float dt)
+    {
+        for (const Contact& contact : contacts)
+        {
+            ResolveContact(registry, contact, dt);
+        }
+    }
+
+    void ResolveContact(entt::registry& registry, const Contact& contact, float dt)
+    {
+        if (!registry.valid(contact.entity))
+            return;
+
+        if (!registry.all_of<RigidbodyComponent>(contact.entity))
+            return;
+
+        auto& body = registry.get<RigidbodyComponent>(contact.entity);
+
+        if (body.type == PhysicsBodyType::Static)
+            return;
+
+        body.position.x += contact.normal.x * contact.penetration;
+        body.position.y += contact.normal.y * contact.penetration;
+
+        ResolveContactVelocity(body, contact);
+        ApplySimpleContactFriction(body, contact.normal, dt);
+    }
+
+
+    void ResolveContactVelocity(RigidbodyComponent& body, const Contact& contact)
+    {
+        const float velocityAlongNormal = body.velocity.x * contact.normal.x + body.velocity.y * contact.normal.y;
+
+        if (velocityAlongNormal >= 0.0f)
+            return;
+
+        const float incomingVelocity = -velocityAlongNormal;
+
+        float newNormalVelocity = 0.0f;
+
+        if (incomingVelocity >= minBounceVelocity)
+            newNormalVelocity = incomingVelocity * body.restitution;
+
+        const float deltaVelocity = newNormalVelocity - velocityAlongNormal;
+
+        body.velocity.x += contact.normal.x * deltaVelocity;
+        body.velocity.y += contact.normal.y * deltaVelocity;
+    }
+
+    void ApplySimpleContactFriction(RigidbodyComponent& body, const DirectX::XMFLOAT3& normal, float dt)
+    {
+        if (body.type != PhysicsBodyType::Dynamic)
+            return;
+
+        const float normalSpeed = body.velocity.x * normal.x + body.velocity.y * normal.y;
+
+        float tangentVelocityX = body.velocity.x - normal.x * normalSpeed;
+        float tangentVelocityY = body.velocity.y - normal.y * normalSpeed;
+
+        const float frictionFactor = 1.0f / (1.0f + body.friction * dt);
+
+        tangentVelocityX *= frictionFactor;
+        tangentVelocityY *= frictionFactor;
+
+        body.velocity.x = normal.x * normalSpeed + tangentVelocityX;
+        body.velocity.y = normal.y * normalSpeed + tangentVelocityY;
+    }
+
+
+    void SyncTransforms(entt::registry& registry)
+    {
+        auto view = registry.view<TransformComponent, RigidbodyComponent>();
+
+        for (auto [entity, transform, body] : view.each())
+        {
+            transform.position.x = body.position.x;
+            transform.position.y = body.position.y;
+        }
+    }
+
 
 
 
