@@ -10,6 +10,15 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
+
+struct Contact
+{
+    entt::entity entity = entt::null;
+    DirectX::XMFLOAT3 point = { 0.0f, 0.0f, 0.0f};
+    DirectX::XMFLOAT3 normal = { 0.0f, 0.0f, 0.0f };
+    float penetration = 0.0f;
+};
+
 class PhysicsSystem
 {
 public:
@@ -160,6 +169,8 @@ public:
     {
         const float dt = static_cast<float>(time.FixedDeltaTime());
 
+		contacts.clear();
+
         auto view = registry.view<TransformComponent, RigidbodyComponent, CircleColliderComponent>();
 
         for (auto [entity, transform, body, collider] : view.each())
@@ -181,7 +192,7 @@ public:
             }
 
 			IntegratePosition(body, dt);
-			SolveCircleFloorCollision(body, collider, dt);
+            SolveCircleFloorCollision(entity, body, collider, dt);
 			SyncTransform(transform, body);
         }
     }
@@ -223,12 +234,22 @@ public:
         body.position.y += body.velocity.y * dt;
     }
 
-    void SolveCircleFloorCollision(RigidbodyComponent& body, const CircleColliderComponent& collider, float dt)
+    void SolveCircleFloorCollision(entt::entity entity, RigidbodyComponent& body, const CircleColliderComponent& collider, float dt)
     {
         const float bottom = body.position.y - collider.radius;
 
         if (bottom < floorY)
         {
+            const float penetration = floorY - bottom;
+
+            Contact contact{};
+            contact.entity = entity;
+            contact.point = { body.position.x, floorY, 0.0f };
+            contact.normal = { 0.0f, 1.0f, 0.0f };
+            contact.penetration = penetration;
+
+            contacts.push_back(contact);
+
             body.position.y = floorY + collider.radius;
 
             if (body.velocity.y < 0.0f)
@@ -243,12 +264,12 @@ public:
                 {
                     body.velocity.y = incomingVelocity * body.restitution;
                 }
+            }
 
-                if(body.type == PhysicsBodyType::Dynamic)
-                {
-					const float frictionFactor = 1.0f / (1.0f + body.friction * dt);
-					body.velocity.x *= frictionFactor;
-				}
+            if (body.type == PhysicsBodyType::Dynamic)
+            {
+                const float frictionFactor = 1.0f / (1.0f + body.friction * dt);
+                body.velocity.x *= frictionFactor;
             }
         }
     }
@@ -266,6 +287,7 @@ private:
     DirectX::XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f };
     float floorY = -5.0f;
     float minBounceVelocity = 0.35f;
+	std::vector<Contact> contacts;
 };
 
 
