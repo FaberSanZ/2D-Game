@@ -33,7 +33,7 @@ public:
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
             body.linearDamping = 0.0f;
             body.linearForce = { 10.0f, 0.0f, 0.0f };
-
+            body.restitution = 0.75f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -69,7 +69,7 @@ public:
             body.linearImpulse = { 0.35f, 0.0f, 0.0f };
             body.linearDamping = 0.5f;
             body.linearForce = { 20.0f, 0.0f, 0.0f };
-
+            body.restitution = 0.35f;
 
             MeshComponent mesh{};
             mesh.shapeType = ShapeType::Circle;
@@ -230,7 +230,18 @@ public:
             body.position.y = floorY + collider.radius;
 
             if (body.velocity.y < 0.0f)
-                body.velocity.y = 0.0f;
+            {
+                const float incomingVelocity = -body.velocity.y;
+
+                if (incomingVelocity < minBounceVelocity)
+                {
+                    body.velocity.y = 0.0f;
+                }
+                else
+                {
+                    body.velocity.y = incomingVelocity * body.restitution;
+                }
+            }
         }
     }
 
@@ -246,6 +257,7 @@ public:
 private:
     DirectX::XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f };
     float floorY = -5.0f;
+    float minBounceVelocity = 0.35f;
 };
 
 
