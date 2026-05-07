@@ -170,50 +170,74 @@ public:
                 if (body.invMass <= 0.0f)
                     continue;
 
-                body.velocity.x += body.linearImpulse.x * body.invMass;
-                body.velocity.y += body.linearImpulse.y * body.invMass;
-
-                body.linearImpulse = { 0.0f, 0.0f, 0.0f };
-
-                body.linearForce.x += gravity.x * body.mass;
-                body.linearForce.y += gravity.y * body.mass;
-
-                body.velocity.x += body.linearForce.x * body.invMass * dt;
-                body.velocity.y += body.linearForce.y * body.invMass * dt;
-
-                body.linearForce = { 0.0f, 0.0f, 0.0f };
-
-                body.velocity.x += body.acceleration.x * dt;
-                body.velocity.y += body.acceleration.y * dt;
-
-                const float dampingFactor = 1.0f / (1.0f + body.linearDamping * dt);
-
-                body.velocity.x *= dampingFactor;
-                body.velocity.y *= dampingFactor;
+                UpdateDynamicBody(body, dt);
             }
 
             if (body.type == PhysicsBodyType::Kinematic)
             {
-                body.velocity.x += body.acceleration.x * dt;
-                body.velocity.y += body.acceleration.y * dt;
+				UpdateKinematicBody(body, dt);
             }
 
-            body.position.x += body.velocity.x * dt;
-            body.position.y += body.velocity.y * dt;
-
-            const float bottom = body.position.y - collider.radius;
-
-            if (bottom < floorY)
-            {
-                body.position.y = floorY + collider.radius;
-
-                if (body.velocity.y < 0.0f)
-                    body.velocity.y = 0.0f;
-            }
-
-            transform.position.x = body.position.x;
-            transform.position.y = body.position.y;
+			IntegratePosition(body, dt);
+			SolveCircleFloorCollision(body, collider);
+			SyncTransform(transform, body);
         }
+    }
+
+
+    void UpdateDynamicBody(RigidbodyComponent& body, float dt)
+    {
+        body.velocity.x += body.linearImpulse.x * body.invMass;
+        body.velocity.y += body.linearImpulse.y * body.invMass;
+
+        body.linearImpulse = { 0.0f, 0.0f, 0.0f };
+
+        body.linearForce.x += gravity.x * body.mass;
+        body.linearForce.y += gravity.y * body.mass;
+
+        body.velocity.x += body.linearForce.x * body.invMass * dt;
+        body.velocity.y += body.linearForce.y * body.invMass * dt;
+
+        body.linearForce = { 0.0f, 0.0f, 0.0f };
+
+        body.velocity.x += body.acceleration.x * dt;
+        body.velocity.y += body.acceleration.y * dt;
+
+        const float dampingFactor = 1.0f / (1.0f + body.linearDamping * dt);
+
+        body.velocity.x *= dampingFactor;
+        body.velocity.y *= dampingFactor;
+    }
+
+    void UpdateKinematicBody(RigidbodyComponent& body, float dt)
+    {
+        body.velocity.x += body.acceleration.x * dt;
+        body.velocity.y += body.acceleration.y * dt;
+    }
+
+    void IntegratePosition(RigidbodyComponent& body, float dt)
+    {
+        body.position.x += body.velocity.x * dt;
+        body.position.y += body.velocity.y * dt;
+    }
+
+    void SolveCircleFloorCollision(RigidbodyComponent& body, const CircleColliderComponent& collider)
+    {
+        const float bottom = body.position.y - collider.radius;
+
+        if (bottom < floorY)
+        {
+            body.position.y = floorY + collider.radius;
+
+            if (body.velocity.y < 0.0f)
+                body.velocity.y = 0.0f;
+        }
+    }
+
+    void SyncTransform(TransformComponent& transform, const RigidbodyComponent& body)
+    {
+        transform.position.x = body.position.x;
+        transform.position.y = body.position.y;
     }
 
 
